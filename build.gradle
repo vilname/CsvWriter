@@ -7,8 +7,12 @@ group = 'org.writer'
 version = '1.0-SNAPSHOT'
 
 java {
-    sourceCompatibility = '17'
-    targetCompatibility = '17'
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(libs.versions.java.get())
+    }
+
+    withSourcesJar()
+    withJavadocJar()
 }
 
 repositories {
@@ -16,12 +20,12 @@ repositories {
 }
 
 dependencies {
-    compileOnly 'org.projectlombok:lombok:1.18.34'
-    annotationProcessor 'org.projectlombok:lombok:1.18.34'
+    compileOnly libs.lombok
+    annotationProcessor libs.lombok.annotation.processor
 
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.0'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-    testImplementation 'net.datafaker:datafaker:2.4.1'
+    testImplementation libs.junit.jupiter
+    testRuntimeOnly libs.junit.platform.launcher
+    testImplementation libs.datafaker
 }
 
 test {
@@ -34,9 +38,4 @@ publishing {
             from components.java
         }
     }
-}
-
-java {
-    withSourcesJar()
-    withJavadocJar()
 }
