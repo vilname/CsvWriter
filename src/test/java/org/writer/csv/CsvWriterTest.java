@@ -75,17 +75,40 @@ class CsvWriterTest {
     @Test
     void writeToFile_rejectsEmptyList() {
         CsvWriter writer = new CsvWriter();
-        assertThrows(IllegalArgumentException.class, () -> writer.writeToFile(List.of(), "x.csv"));
+        List<Object> emptyData = List.of();
+        String fileName = "x.csv";
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> writer.writeToFile(emptyData, fileName));
+
+        assertEquals("data must not be empty (cannot infer row type)", exception.getMessage());
     }
 
     @Test
     void writeToFile_rejectsMixedRowTypes(@TempDir Path dir) {
         CsvWriter writer = new CsvWriter();
         Path file = dir.resolve("bad.csv");
-        List<Object> mixed = List.of(
-                Person.builder().firstName("a").lastName("b").dayOfBirth(1).monthOfBirth(Months.JANUARY).yearOfBirth(2000).build(),
-                Student.builder().name("x").score(List.of("1")).build()
-        );
-        assertThrows(IllegalArgumentException.class, () -> writer.writeToFile(mixed, file.toString()));
+
+        Person person = Person.builder()
+                .firstName("a")
+                .lastName("b")
+                .dayOfBirth(1)
+                .monthOfBirth(Months.JANUARY)
+                .yearOfBirth(2000)
+                .build();
+
+        Student student = Student.builder()
+                .name("x")
+                .score(List.of("1"))
+                .build();
+
+        List<Object> mixed = List.of(person, student);
+
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> writer.writeToFile(mixed, file.toString()));
+
+
+        assertTrue(exception.getMessage().contains("All rows must be of type"));
     }
 }
