@@ -5,11 +5,12 @@ import org.writer.Writable;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
@@ -105,13 +106,7 @@ public class CsvWriter implements Writable {
     private static String buildDataLine(Object row, List<Field> columns) {
         List<String> cells = new ArrayList<>(columns.size());
         for (Field field : columns) {
-            field.setAccessible(true);
-            Object value;
-            try {
-                value = field.get(row);
-            } catch (IllegalAccessException e) {
-                throw new IllegalStateException("Cannot read field " + field.getName(), e);
-            }
+            Object value = getValueViaGetter(row, field);
             cells.add(escapeCsvField(formatCell(value)));
         }
         return String.join(",", cells);
@@ -146,5 +141,33 @@ public class CsvWriter implements Writable {
             return "\"" + s.replace("\"", "\"\"") + "\"";
         }
         return s;
+    }
+
+    private static Object getValueViaGetter(Object obj, Field field) {
+        String fieldName = field.getName();
+        String getterName = "get" + fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
+
+        try {
+            Method getter = obj.getClass().getMethod(getterName);
+            return getter.invoke(obj);
+        } catch (NoSuchMethodException e) {
+            // Пробуем is-геттер для boolean
+            if (field.getType() == boolean.class || field.getType() == Boolean.class) {
+                String isGetterName = "is" + fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
+                try {
+                    Method isGetter = obj.getClass().getMethod(isGetterName);
+                    return isGetter.invoke(obj);
+                } catch (NoSuchMethodException ex) {
+                    throw new IllegalStateException(
+                            String.format("No getter found for field '%s' (tried %s and %s)",
+                                    fieldName, getterName, isGetterName), ex);
+                } catch (InvocationTargetException | IllegalAccessException ex) {
+                    throw new IllegalStateException("Cannot invoke is-getter for field: " + fieldName, ex);
+                }
+            }
+            throw new IllegalStateException("No getter found for field: " + fieldName, e);
+        } catch (InvocationTargetException | IllegalAccessException e) {
+            throw new IllegalStateException("Cannot invoke getter for field: " + fieldName, e);
+        }
     }
 }

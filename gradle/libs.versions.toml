@@ -1,0 +1,14 @@
+[versions]
+java = "17"
+lombok = "1.18.34"
+junit = "6.0.3"
+datafaker = "2.4.1"
+
+[libraries]
+lombok = { group = "org.projectlombok", name = "lombok", version.ref = "lombok" }
+lombok-annotation-processor = { group = "org.projectlombok", name = "lombok", version.ref = "lombok" }
+junit-jupiter = { group = "org.junit.jupiter", name = "junit-jupiter", version.ref = "junit" }
+junit-platform-launcher = { group = "org.junit.platform", name = "junit-platform-launcher", version.ref = "junit" }
+datafaker = { group = "net.datafaker", name = "datafaker", version.ref = "datafaker" }
+
+[plugins]

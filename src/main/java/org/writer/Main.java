@@ -38,7 +38,6 @@ public class Main {
         );
         String peopleFile = outDir.resolve("people.csv").toString();
         csv.writeToFile(people, peopleFile);
-        System.out.println("Wrote " + peopleFile);
 
         List<Student> students = List.of(
                 Student.builder().name("Elena Smirnova").score(List.of("5", "4", "5")).build(),
