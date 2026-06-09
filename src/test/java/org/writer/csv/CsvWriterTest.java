@@ -105,8 +105,10 @@ class CsvWriterTest {
         List<Object> mixed = List.of(person, student);
 
 
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> writer.writeToFile(mixed, file.toString()));
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> writer.writeToFile(mixed, file.toString())
+        );
 
 
         assertTrue(exception.getMessage().contains("All rows must be of type"));
